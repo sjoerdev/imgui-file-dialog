@@ -1,14 +1,10 @@
 ## Description
-This is an implementation of a file dialog in imgui
+This is a direct port of [this](https://github.com/sjoerdev?tab=repositories) file dialog project ported to C# and modern dotnet.
 
 ## Building:
 
 Download .NET 9: https://dotnet.microsoft.com/en-us/download
 
-Building for Windows:
-1. Run this command: ``dotnet publish -o ./build/windows --sc true -r win-x64 -c release``
-2. Copy the ``res/`` folder the the ``build/windows/`` directory
+Building for Windows: ``dotnet publish -o ./build/windows --sc true -r win-x64 -c release``
 
-Building for Linux:
-1. Run this command: ``dotnet publish -o ./build/linux --sc true -r linux-x64 -c release``
-2. Copy the ``res/`` folder the the ``build/linux/`` directory
+Building for Linux: ``dotnet publish -o ./build/linux --sc true -r linux-x64 -c release``
