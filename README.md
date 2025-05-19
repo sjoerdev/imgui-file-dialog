@@ -1,5 +1,5 @@
 ## Description
-This is a direct port of [this](https://github.com/sjoerdev?tab=repositories) file dialog project ported to C# and modern dotnet.
+This is a direct port of [this file dialog project](https://github.com/Limeoats/L2DFileDialog), ported to C# and modern dotnet.
 
 ## Building:
 
