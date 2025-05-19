@@ -7,79 +7,55 @@ using Hexa.NET.ImGui;
 
 namespace Project;
 
-public enum FileDialogType
-{
-    OpenFile,
-    SelectFolder
-}
-
-public enum FileDialogSortOrder
-{
-    Up,
-    Down,
-    None
-}
-
 public static class FileDialog
 {
     static bool initialPathSet = false;
+
     static int fileSelectIndex = 0;
     static int folderSelectIndex = 0;
+
     static string currentPath = Directory.GetCurrentDirectory();
     static string currentFile = string.Empty;
     static string currentFolder = string.Empty;
+
     static string fileDialogError = string.Empty;
 
-    static FileDialogSortOrder fileNameSortOrder = FileDialogSortOrder.None;
-    static FileDialogSortOrder sizeSortOrder = FileDialogSortOrder.None;
-    static FileDialogSortOrder dateSortOrder = FileDialogSortOrder.None;
-    static FileDialogSortOrder typeSortOrder = FileDialogSortOrder.None;
+    static SortOrder fileNameSortOrder = SortOrder.None;
+    static SortOrder sizeSortOrder = SortOrder.None;
+    static SortOrder dateSortOrder = SortOrder.None;
+    static SortOrder typeSortOrder = SortOrder.None;
 
     static string newFolderName = string.Empty;
     static string newFolderError = string.Empty;
 
-    public static void Show(ref bool open, ref string resultPath, FileDialogType type = FileDialogType.OpenFile)
+    public static void Show(ref bool open, ref string resultPath, DialogType type = DialogType.OpenFile)
     {
+        // return if it shouldnt be open
         if (!open) return;
 
+        // try to set initial path
         if (!initialPathSet && !string.IsNullOrEmpty(resultPath))
         {
-            if (Directory.Exists(resultPath))
-            {
-                currentPath = resultPath;
-            }
-            else if (File.Exists(resultPath))
-            {
-                currentPath = Path.GetDirectoryName(resultPath);
-            }
-            else
-            {
-                currentPath = Directory.GetCurrentDirectory();
-            }
-
+            if (Directory.Exists(resultPath)) currentPath = resultPath;
+            else if (File.Exists(resultPath)) currentPath = Path.GetDirectoryName(resultPath);
+            else currentPath = Directory.GetCurrentDirectory();
             initialPathSet = true;
         }
 
+        // setup the imgui window
+        string title = type == DialogType.OpenFile ? "Select a file" : "Select a folder";
         ImGui.SetNextWindowSize(new Vector2(740, 410), ImGuiCond.FirstUseEver);
-        string title = type == FileDialogType.OpenFile ? "Select a file" : "Select a folder";
-
         if (ImGui.Begin(title, ImGuiWindowFlags.NoResize))
         {
-            // Collect directory entries
-            var files = new List<FileInfo>();
-            var folders = new List<DirectoryInfo>();
+            // collect directory entries
+            var dir = new DirectoryInfo(currentPath);
+            var files = dir.GetFiles().ToList();
+            var folders = dir.GetDirectories().ToList();
 
-            try
-            {
-                var dir = new DirectoryInfo(currentPath);
-                folders = dir.GetDirectories().ToList();
-                files = dir.GetFiles().ToList();
-            }
-            catch { }
-
+            // display current path
             ImGui.Text(currentPath);
 
-            // Folder panel
+            // folder panel
             ImGui.BeginChild("Folders", new Vector2(200, 300), ImGuiWindowFlags.HorizontalScrollbar);
 
             if (ImGui.Selectable("..", false, ImGuiSelectableFlags.AllowDoubleClick))
@@ -87,8 +63,7 @@ public static class FileDialog
                 if (ImGui.IsMouseDoubleClicked(0))
                 {
                     var parent = Directory.GetParent(currentPath);
-                    if (parent != null)
-                        currentPath = parent.FullName;
+                    if (parent != null) currentPath = parent.FullName;
                 }
             }
 
@@ -259,11 +234,11 @@ public static class FileDialog
             ImGui.SameLine();
             if (ImGui.Button("Choose"))
             {
-                if (type == FileDialogType.SelectFolder && string.IsNullOrEmpty(currentFolder))
+                if (type == DialogType.SelectFolder && string.IsNullOrEmpty(currentFolder))
                 {
                     fileDialogError = "You must select a folder!";
                 }
-                else if (type == FileDialogType.OpenFile && string.IsNullOrEmpty(currentFile))
+                else if (type == DialogType.OpenFile && string.IsNullOrEmpty(currentFile))
                 {
                     fileDialogError = "You must select a file!";
                 }
@@ -296,33 +271,46 @@ public static class FileDialog
         initialPathSet = false;
     }
 
-    static void ToggleSort(ref FileDialogSortOrder target, ref FileDialogSortOrder a, ref FileDialogSortOrder b, ref FileDialogSortOrder c)
+    static void ToggleSort(ref SortOrder target, ref SortOrder a, ref SortOrder b, ref SortOrder c)
     {
-        a = b = c = FileDialogSortOrder.None;
-        target = target == FileDialogSortOrder.Down ? FileDialogSortOrder.Up : FileDialogSortOrder.Down;
+        a = b = c = SortOrder.None;
+        target = target == SortOrder.Down ? SortOrder.Up : SortOrder.Down;
     }
 
     static void SortFiles(ref List<FileInfo> files)
     {
-        if (fileNameSortOrder != FileDialogSortOrder.None)
+        if (fileNameSortOrder != SortOrder.None)
         {
             files = files.OrderBy(f => f.Name).ToList();
-            if (fileNameSortOrder == FileDialogSortOrder.Down) files.Reverse();
+            if (fileNameSortOrder == SortOrder.Down) files.Reverse();
         }
-        else if (sizeSortOrder != FileDialogSortOrder.None)
+        else if (sizeSortOrder != SortOrder.None)
         {
             files = files.OrderBy(f => f.Length).ToList();
-            if (sizeSortOrder == FileDialogSortOrder.Down) files.Reverse();
+            if (sizeSortOrder == SortOrder.Down) files.Reverse();
         }
-        else if (typeSortOrder != FileDialogSortOrder.None)
+        else if (typeSortOrder != SortOrder.None)
         {
             files = files.OrderBy(f => f.Extension).ToList();
-            if (typeSortOrder == FileDialogSortOrder.Down) files.Reverse();
+            if (typeSortOrder == SortOrder.Down) files.Reverse();
         }
-        else if (dateSortOrder != FileDialogSortOrder.None)
+        else if (dateSortOrder != SortOrder.None)
         {
             files = files.OrderBy(f => f.LastWriteTime).ToList();
-            if (dateSortOrder == FileDialogSortOrder.Down) files.Reverse();
+            if (dateSortOrder == SortOrder.Down) files.Reverse();
         }
+    }
+
+    public enum DialogType
+    {
+        OpenFile,
+        SelectFolder
+    }
+
+    public enum SortOrder
+    {
+        Up,
+        Down,
+        None
     }
 }

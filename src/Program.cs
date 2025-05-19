@@ -52,13 +52,10 @@ public static class Program
 
         ImGui.Begin("Window");
         ImGui.SetWindowSize(new Vector2(600, 300), ImGuiCond.Once);
-
         if (ImGui.Button("Open file dialog")) fileDialogOpen = true;
         if (!fileDialogOpen && !string.IsNullOrEmpty(selectedPath)) ImGui.Text($"Selected path: {selectedPath}");
         else ImGui.Text("Selected path: ?");
-
-        if (fileDialogOpen) FileDialog.Show(ref fileDialogOpen, ref selectedPath, FileDialogType.OpenFile);
-
+        if (fileDialogOpen) FileDialog.Show(ref fileDialogOpen, ref selectedPath, FileDialog.DialogType.OpenFile);
         ImGui.End();
 
 
