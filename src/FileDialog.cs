@@ -122,11 +122,22 @@ public static class FileDialog
                 }
 
                 ImGui.NextColumn();
-                ImGui.Text(file.Length.ToString());
+                string str;
+                long bytes = file.Length;
+                if (bytes >= 1073741824) str = (bytes / 1073741824.0).ToString("0.##") + " GB"; // higher than gb
+                else if (bytes >= 1048576) str = (bytes / 1048576.0).ToString("0.##") + " MB"; // higher than mb
+                else if (bytes >= 1024) str = (bytes / 1024.0).ToString("0.##") + " KB"; // higher than kb
+                else str = "1 KB"; // lower than kb
+                float columnWidth = ImGui.GetColumnWidth();
+                Vector2 textSize = ImGui.CalcTextSize(str + " ");
+                float cursorStartX = ImGui.GetCursorPosX();
+                float textPosX = cursorStartX + (columnWidth - textSize.X - ImGui.GetStyle().CellPadding.X * 2);
+                ImGui.SetCursorPosX(textPosX > cursorStartX ? textPosX : cursorStartX);
+                ImGui.Text(str);
                 ImGui.NextColumn();
                 ImGui.Text(file.Extension);
                 ImGui.NextColumn();
-                ImGui.Text(file.LastWriteTime.ToString("yyyy-MM-dd HH:mm"));
+                ImGui.Text(file.LastWriteTime.ToString("dd-MM-yyyy HH:mm"));
                 ImGui.NextColumn();
             }
 
